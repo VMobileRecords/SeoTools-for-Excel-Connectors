@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Suite Category="Ads" Title="Bing Ads" Id="BingAds" RequireVersion="7.0" SourceUrl="https://github.com/nielsbosma/SeoTools-for-Excel-Connectors/blob/master/BingAds.xml" HelpUrl="http://seotoolsforexcel.com/bing-ads/">
+
+  <Author Name="Dovydas Meilunas" Url="https://github.com/dovydasm"/>
+
+  <Settings HelpText="What's this?" HelpUrl="http://seotoolsforexcel.com/bingads/">
+    <Text Id="ApiKey" Title="API Key" Required="true" HelpUrl="http://seotoolsforexcel.com/bingads/"/>
+  </Settings>
+
+  <RestConnector Id="" Title="" HelpUrl="http://">
+    <Fetch>
+      <Fetch.Url>
+        <![CDATA[
+        http://
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+
+    <Parse>
+
+    </Parse>
+  </RestConnector>
+</Suite>
