@@ -3,21 +3,130 @@
 
   <Author Name="Dovydas Meilunas" Url="https://github.com/dovydasm"/>
 
-  <Settings HelpText="What's this?" HelpUrl="http://seotoolsforexcel.com/bingads/">
-    <Text Id="ApiKey" Title="API Key" Required="true" HelpUrl="http://seotoolsforexcel.com/bingads/"/>
-  </Settings>
+  <DefaultOAuthAuthenticator StayAuthenticated="true" TokenName="access_token" AuthUrl="https://login.live.com/oauth20_authorize.srf?client_id=a688826e-d804-4c17-9317-e898b3508c99&amp;scope=bingads.manage&amp;response_type=token&amp;redirect_uri={0}&amp;state=hf7FD437we89"
+  />
 
-  <RestConnector Id="" Title="" HelpUrl="http://">
+  <Resources>
+    <Resource Id="Fail">
+      <Fail>
+        <XPath Expr="//faultstring"/>
+      </Fail>
+    </Resource>
+  </Resources>
+
+  <RestConnector Id="GetCustomers" Title="Customers" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/getaccountsinfo?view=bingads-12">
     <Fetch>
+      <HttpSettings>
+        <RequestHeaders>
+          <Header Name="Authorization"><![CDATA[Bearer @(Model.Authenticator.Token)]]></Header>
+          <Header Name="SOAPAction">GetCustomersInfo</Header>
+        </RequestHeaders>
+        <RequestMethod>POST</RequestMethod>
+        <RequestContentType>text/xml; charset=utf-8</RequestContentType>
+        <RequestBody>
+          <![CDATA[
+          <s:Envelope xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+            <s:Header xmlns="https://bingads.microsoft.com/Customer/v12">
+              <Action mustUnderstand="1">GetCustomersInfo</Action>
+              <AuthenticationToken i:nil="false">@(Model.Authenticator.Token)</AuthenticationToken>
+              <DeveloperToken i:nil="false">119C9YN00G530945</DeveloperToken>
+            </s:Header>
+            <s:Body>
+              <GetCustomersInfoRequest xmlns="https://bingads.microsoft.com/Customer/v12">
+                <CustomerNameFilter i:nil="false">ValueHere</CustomerNameFilter>
+                <TopN>1000</TopN>
+              </GetCustomersInfoRequest>
+            </s:Body>
+          </s:Envelope>
+          ]]>
+        </RequestBody>
+      </HttpSettings>
       <Fetch.Url>
         <![CDATA[
-        http://
+          https://clientcenter.api.bingads.microsoft.com/Api/CustomerManagement/v12/CustomerManagementService.svc
         ]]>
       </Fetch.Url>
     </Fetch>
-
     <Parse>
-
+      <JsonPath Expr="test" Id="test" Name="test"/>
     </Parse>
+    <Resource Id="Fail"/>
   </RestConnector>
+
+  <RestConnector Id="GetAccounts" Title="Accounts" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/searchaccounts?view=bingads-12">
+    <Fetch>
+      <HttpSettings>
+        <RequestHeaders>
+          <Header Name="Authorization"><![CDATA[Bearer @(Model.Authenticator.Token)]]></Header>
+          <Header Name="SOAPAction">SearchAccounts</Header>
+        </RequestHeaders>
+        <RequestMethod>POST</RequestMethod>
+        <RequestContentType>text/xml; charset=utf-8</RequestContentType>
+        <RequestBody>
+          <![CDATA[
+          <s:Envelope xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+            <s:Header xmlns="https://bingads.microsoft.com/Customer/v12">
+              <Action mustUnderstand="1">SearchAccounts</Action>
+              <AuthenticationToken i:nil="false">@(Model.Authenticator.Token)</AuthenticationToken>
+              <DeveloperToken i:nil="false">119C9YN00G530945</DeveloperToken>
+            </s:Header>
+            <s:Body>
+              <SearchAccountsRequest xmlns="https://bingads.microsoft.com/Customer/v12">
+                <Predicates xmlns:e263="https://bingads.microsoft.com/Customer/v12/Entities" i:nil="false">
+                  <e263:Predicate>
+                    <e263:Field i:nil="false">AccountName</e263:Field>
+                    <e263:Operator>Contains</e263:Operator>
+                    <e263:Value i:nil="false">a</e263:Value>
+                  </e263:Predicate>
+                </Predicates>
+                <Ordering xmlns:e264="https://bingads.microsoft.com/Customer/v12/Entities" i:nil="false">
+                  <e264:OrderBy>
+                    <e264:Field>Id</e264:Field>
+                    <e264:Order>Descending</e264:Order>
+                  </e264:OrderBy>
+                </Ordering>
+                <PageInfo xmlns:e265="https://bingads.microsoft.com/Customer/v12/Entities" i:nil="false">
+                  <e265:Index>0</e265:Index>
+                  <e265:Size>10</e265:Size>
+                </PageInfo>
+              </SearchAccountsRequest>
+            </s:Body>
+          </s:Envelope>
+          ]]>
+        </RequestBody>
+      </HttpSettings>
+      <Fetch.Url>
+        <![CDATA[
+          https://clientcenter.api.bingads.microsoft.com/Api/CustomerManagement/v12/CustomerManagementService.svc
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <Xpath Expr="//*[name()='accounts']/*[name()='a:advertiseraccount']">
+        <Xpath Expr="./*[name()='a:billtocustomerid']" Id="" />
+        <Xpath Expr="./*[name()='']" Id="" />
+      </Xpath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+  <RazorFunctions>
+    <![CDATA[
+    string XmlEscape(string unescaped)
+    {
+      XmlDocument doc = new XmlDocument();
+      XmlNode node = doc.CreateElement("root");
+      node.InnerText = unescaped;
+      return node.InnerXml;
+    }
+
+    string XmlUnescape(string escaped)
+      {
+      XmlDocument doc = new XmlDocument();
+      XmlNode node = doc.CreateElement("root");
+      node.InnerXml = escaped;
+      return node.InnerText;
+    }
+    ]]>
+  </RazorFunctions>
 </Suite>
