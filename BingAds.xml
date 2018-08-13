@@ -53,7 +53,7 @@
     <Resource Id="Fail"/>
   </RestConnector>
 
-  <RestConnector Id="GetAccounts" Title="Accounts" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/searchaccounts?view=bingads-12">
+  <RestConnector Id="GetAccountDetailed" Title="Accounts (Detailed)" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/searchaccounts?view=bingads-12">
     <Fetch>
       <HttpSettings>
         <RequestHeaders>
@@ -103,9 +103,69 @@
     </Fetch>
     <Parse>
       <Xpath Expr="//*[name()='accounts']/*[name()='a:advertiseraccount']">
-        <Xpath Expr="./*[name()='a:billtocustomerid']" Id="" />
-        <Xpath Expr="./*[name()='']" Id="" />
+        <Xpath Expr="./*[name()='a:id']" Id="Id" Title="Id"/>
+        <Xpath Expr="./*[name()='a:billtocustomerid']" Id="BillToCustomerId" Title="Bill to Customer"/>
+        <Xpath Expr="./*[name()='a:currencycode']" Id="CurrencyCode" Title="Currency Code"/>
+        <Xpath Expr="./*[name()='a:accountfinancialstatus']" Id="FinancialStatus" Title="Financial Status"/>
+        <Xpath Expr="./*[name()='a:language']" Id="Language" Title="Language"/>
+        <Xpath Expr="./*[name()='a:name']" Id="Name" Title="Name"/>
+        <Xpath Expr="./*[name()='a:number']" Id="Number" Title="Account Number"/>
+        <Xpath Expr="./*[name()='a:paymentmethodtype']" Id="PaymentMethodType" Title="Payment Method Type"/>
+        <Xpath Expr="./*[name()='a:accountlifecyclestatus']" Id="Status" Title="Status"/>
+        <Xpath Expr="./*[name()='a:timezone']" Id="Timezone" Title="Timezone"/>
+        <Xpath Expr="./*[name()='a:billingthresholdamount']" Id="BillingThresholdAmount" Title="BillingThresholdAmount"/>
+        <!--<Xpath Expr="./*[name()='']" Id="" Title=""/>-->
       </Xpath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+  <RestConnector Id="GetAccountsBasic" Title="Accounts (Basic)" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/searchaccounts?view=bingads-12">
+    <Parameters>
+      <Text Id="Email" Title="Email" Debug.DefaultValue="dovydas.m@gmail.com" Required="true"/>
+    </Parameters>
+    <Fetch>
+      <HttpSettings>
+        <RequestHeaders>
+          <Header Name="SOAPAction">FindAccountsOrCustomersInfo</Header>
+        </RequestHeaders>
+        <RequestMethod>POST</RequestMethod>
+        <RequestContentType>text/xml; charset=utf-8</RequestContentType>
+        <RequestBody>
+          <![CDATA[
+           <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+            <s:Header>
+              <h:ApplicationToken i:nil="true" xmlns:h="https://bingads.microsoft.com/Customer/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+              <h:AuthenticationToken xmlns:h="https://bingads.microsoft.com/Customer/v12">@(Model.Authenticator.Token)</h:AuthenticationToken>
+              <h:DeveloperToken xmlns:h="https://bingads.microsoft.com/Customer/v12">119C9YN00G530945</h:DeveloperToken>
+              <h:Password i:nil="true" xmlns:h="https://bingads.microsoft.com/Customer/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+              <h:UserName xmlns:h="https://bingads.microsoft.com/Customer/v12">@(Model.Email)</h:UserName>
+            </s:Header>
+            <s:Body>
+              <FindAccountsOrCustomersInfoRequest xmlns="https://bingads.microsoft.com/Customer/v12">
+                <Filter/>
+                <TopN>1000</TopN>
+              </FindAccountsOrCustomersInfoRequest>
+            </s:Body>
+          </s:Envelope>
+          ]]>
+        </RequestBody>
+      </HttpSettings>
+      <Fetch.Url>
+        <![CDATA[
+          https://clientcenter.api.bingads.microsoft.com/Api/CustomerManagement/v12/CustomerManagementService.svc
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+        <Xpath Expr="//*[name()='accountinfowithcustomerdata']/*[name()='a:accountinfowithcustomerdata']" Id="asd">
+          <Xpath Expr="./*[name()='a:customerid']" Id="Id" Title="Id"/>
+          <Xpath Expr="./*[name()='a:customername']" Id="Name" Title="Name"/>
+          <Xpath Expr="./*[name()='a:accountname']" Id="AccountName" Title="Account Name"/>
+          <Xpath Expr="./*[name()='a:accountid']" Id="AccountId" Title="Account Id"/>
+          <Xpath Expr="./*[name()='a:accountnumber']" Id="AccountNumber" Title="Account Number" Converter="Int"/>
+          <Xpath Expr="./*[name()='a:accountlifecyclestatus']" Id="Status" Title="Status"/>
+        </Xpath>
     </Parse>
     <Resource Id="Fail"/>
   </RestConnector>
@@ -114,16 +174,16 @@
     <![CDATA[
     string XmlEscape(string unescaped)
     {
-      XmlDocument doc = new XmlDocument();
-      XmlNode node = doc.CreateElement("root");
+      System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+      System.Xml.XmlNode node = doc.CreateElement("root");
       node.InnerText = unescaped;
       return node.InnerXml;
     }
 
     string XmlUnescape(string escaped)
-      {
-      XmlDocument doc = new XmlDocument();
-      XmlNode node = doc.CreateElement("root");
+    {
+      System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+      System.Xml.XmlNode node = doc.CreateElement("root");
       node.InnerXml = escaped;
       return node.InnerText;
     }
