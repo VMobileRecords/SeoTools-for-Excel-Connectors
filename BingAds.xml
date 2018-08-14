@@ -122,7 +122,7 @@
 
   <RestConnector Id="GetAccountsBasic" Title="Accounts (Basic)" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/searchaccounts?view=bingads-12">
     <Parameters>
-      <Text Id="Email" Title="Email" Debug.DefaultValue="dovydas.m@gmail.com" Required="true"/>
+      <Text Id="Email" Title="Email" Required="true"/>
     </Parameters>
     <Fetch>
       <HttpSettings>
@@ -169,6 +169,124 @@
     </Parse>
     <Resource Id="Fail"/>
   </RestConnector>
+
+  <RestConnector Id="GetAccountsHidden" Hidden="True" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/searchaccounts?view=bingads-12">
+    <Parameters>
+      <Text Id="Email" Title="Email" Required="true"/>
+    </Parameters>
+    <Fetch>
+      <HttpSettings>
+        <RequestHeaders>
+          <Header Name="SOAPAction">FindAccountsOrCustomersInfo</Header>
+        </RequestHeaders>
+        <RequestMethod>POST</RequestMethod>
+        <RequestContentType>text/xml; charset=utf-8</RequestContentType>
+        <RequestBody>
+          <![CDATA[
+           <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+            <s:Header>
+              <h:ApplicationToken i:nil="true" xmlns:h="https://bingads.microsoft.com/Customer/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+              <h:AuthenticationToken xmlns:h="https://bingads.microsoft.com/Customer/v12">@(Model.Authenticator.Token)</h:AuthenticationToken>
+              <h:DeveloperToken xmlns:h="https://bingads.microsoft.com/Customer/v12">119C9YN00G530945</h:DeveloperToken>
+              <h:Password i:nil="true" xmlns:h="https://bingads.microsoft.com/Customer/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+              <h:UserName xmlns:h="https://bingads.microsoft.com/Customer/v12">@(Model.Email)</h:UserName>
+            </s:Header>
+            <s:Body>
+              <FindAccountsOrCustomersInfoRequest xmlns="https://bingads.microsoft.com/Customer/v12">
+                <Filter/>
+                <TopN>1000</TopN>
+              </FindAccountsOrCustomersInfoRequest>
+            </s:Body>
+          </s:Envelope>
+          ]]>
+        </RequestBody>
+      </HttpSettings>
+      <Fetch.Url>
+        <![CDATA[
+          https://clientcenter.api.bingads.microsoft.com/Api/CustomerManagement/v12/CustomerManagementService.svc
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <Xpath Expr="//*[name()='accountinfowithcustomerdata']/*[name()='a:accountinfowithcustomerdata']">
+        <Compute Id="Name">
+          <Compute.Expr>
+            <![CDATA[
+            @{
+              string name = "";
+              name += Model.CustomerName + " - " + Model.AccountName;
+            }
+            @name
+            ]]>
+          </Compute.Expr>
+          <Xpath Expr="./*[name()='a:customername']" Id="CustomerName"/>
+          <Xpath Expr="./*[name()='a:accountname']" Id="AccountName"/>
+        </Compute>
+        <Xpath Expr="./*[name()='a:accountid']" Id="AccountId" Title="Account Id"/>
+      </Xpath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+  <RestConnector Id="GetCampaigns" Title="Campaigns" HelpUrl="https://docs.microsoft.com/en-us/bingads/campaign-management-service/getcampaignsbyaccountid?view=bingads-12">
+    <Parameters>
+      <Text Id="Email" Title="Email" Required="true"/>
+      <Text Id="AccountId" Title="Account Id" Required="true" Select.Connector="GetAccountsHidden" Select.IdField="AccountId" Select.TitleField="Name"/>
+      <Select Id="Type" Title="Type" DefaultValue="Search" Required="true">
+        <DataSource>
+          <!--MultiSelect-->
+          <Item Id="Search" Title="Search"/>
+          <Item Id="Shopping" Title="Shopping"/>
+          <Item Id="DynamicSearchAds" Title="Dynamic Search Ads"/>
+        </DataSource>
+      </Select>
+    </Parameters>
+    <Fetch>
+      <HttpSettings>
+        <RequestHeaders>
+          <Header Name="SOAPAction">FindAccountsOrCustomersInfo</Header>
+        </RequestHeaders>
+        <RequestMethod>POST</RequestMethod>
+        <RequestContentType>text/xml; charset=utf-8</RequestContentType>
+        <RequestBody>
+          <![CDATA[
+           <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+            <s:Header>
+              <h:ApplicationToken i:nil="true" xmlns:h="https://bingads.microsoft.com/Customer/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+              <h:AuthenticationToken xmlns:h="https://bingads.microsoft.com/Customer/v12">@(Model.Authenticator.Token)</h:AuthenticationToken>
+              <h:DeveloperToken xmlns:h="https://bingads.microsoft.com/Customer/v12">119C9YN00G530945</h:DeveloperToken>
+              <h:Password i:nil="true" xmlns:h="https://bingads.microsoft.com/Customer/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+              <h:UserName xmlns:h="https://bingads.microsoft.com/Customer/v12">@(Model.Email)</h:UserName>
+            </s:Header>
+            <s:Body>
+              <GetCampaignsByAccountIdRequest	xmlns="https://bingads.microsoft.com/CampaignManagement/v12">
+					      <AccountId>@(Model.AccountId)</AccountId>
+      					<CampaignType>Search</CampaignType>
+			        </GetCampaignsByAccountIdRequest>
+            </s:Body>
+          </s:Envelope>
+          ]]>
+        </RequestBody>
+      </HttpSettings>
+      <Fetch.Url>
+        <![CDATA[
+          https://clientcenter.api.bingads.microsoft.com/Api/CustomerManagement/v12/CustomerManagementService.svc
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <Xpath Expr="//*[name()='accountinfowithcustomerdata']/*[name()='a:accountinfowithcustomerdata']" Id="asd">
+        <Xpath Expr="./*[name()='a:customerid']" Id="Id" Title="Id"/>
+        <Xpath Expr="./*[name()='a:customername']" Id="Name" Title="Name"/>
+        <Xpath Expr="./*[name()='a:accountname']" Id="AccountName" Title="Account Name"/>
+        <Xpath Expr="./*[name()='a:accountid']" Id="AccountId" Title="Account Id"/>
+        <Xpath Expr="./*[name()='a:accountnumber']" Id="AccountNumber" Title="Account Number" Converter="Int"/>
+        <Xpath Expr="./*[name()='a:accountlifecyclestatus']" Id="Status" Title="Status"/>
+      </Xpath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
 
   <RazorFunctions>
     <![CDATA[
