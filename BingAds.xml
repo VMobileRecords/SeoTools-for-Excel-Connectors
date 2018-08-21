@@ -158,7 +158,7 @@
     </Fetch>
     <Parse>
       <Xpath Expr="//*[name()='accountinfowithcustomerdata']/*[name()='a:accountinfowithcustomerdata']">
-        <Xpath Expr="./*[name()='a:customerid']" Id="Id" Title="Id"/>
+        <Xpath Expr="./*[name()='a:customerid']" Id="Id" Title="Customer Id"/>
         <Xpath Expr="./*[name()='a:customername']" Id="Name" Title="Name"/>
         <Xpath Expr="./*[name()='a:accountname']" Id="AccountName" Title="Account Name"/>
         <Xpath Expr="./*[name()='a:accountid']" Id="AccountId" Title="Account Id"/>
@@ -241,8 +241,8 @@
 
   <RestConnector Id="GetCampaigns" Title="Campaigns" HelpUrl="https://docs.microsoft.com/en-us/bingads/campaign-management-service/getcampaignsbyaccountid?view=bingads-12">
     <Parameters>
-      <Text Id="Email" Title="Email" Debug.DefaultValue="dovydas.m@gmail.com" Required="true"/>
-      <Text Id="AccountId" Title="Account Id" Required="true" Debug.DefaultValue="250151008/150145763" Select.Connector="GetAccountsHidden" Select.IdField="AccountId" Select.TitleField="Name"/>
+      <Text Id="Email" Title="Email" Required="true"/>
+      <Text Id="AccountId" Title="Account Id" Required="true" Select.Connector="GetAccountsHidden" Select.IdField="AccountId" Select.TitleField="Name"/>
       <Select Id="Type" Title="Type" DefaultValue="Search" Required="true">
         <DataSource>
           <!--MultiSelect-->
@@ -310,6 +310,168 @@
     <Resource Id="Fail"/>
   </RestConnector>
 
+  <RestConnector Id="SubmitGenerateReport" Hidden="True" Title="Generate a Report" HelpUrl="https://docs.microsoft.com/en-us/bingads/reporting-service/submitgeneratereport?view=bingads-12">
+    <Parameters>
+      <Text Id="CampaignId" Debug.DefaultValue="349338690"/>
+      <Text Id="AccountId" Title="Account Id" Required="true" Debug.DefaultValue="150145763"/>
+      <!--<Select Id="Type" Title="Type"  Debug.DefaultValue="250151008/150145763" DefaultValue="Search" Required="true">-->
+        <!--<DataSource>-->
+          <!--<Item Id="Search" Title="Search"/>-->
+          <!--<Item Id="Shopping" Title="Shopping"/>-->
+          <!--<Item Id="DynamicSearchAds" Title="Dynamic Search Ads"/>-->
+        <!--</DataSource>-->
+      <!--</Select>-->
+    </Parameters>
+    <Fetch>
+      <HttpSettings>
+        <RequestHeaders>
+          <Header Name="SOAPAction">SubmitGenerateReport</Header>
+        </RequestHeaders>
+        <RequestMethod>POST</RequestMethod>
+        <RequestContentType>text/xml; charset=utf-8</RequestContentType>
+        <RequestBody>
+          <![CDATA[
+           <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+            	<s:Header>
+                <h:ApplicationToken i:nil="true" xmlns:h="https://bingads.microsoft.com/Reporting/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+                  <h:AuthenticationToken xmlns:h="https://bingads.microsoft.com/Reporting/v12">@(Model.Authenticator.Token)</h:AuthenticationToken>
+                  <h:CustomerAccountId i:nil="true"	xmlns:h="https://bingads.microsoft.com/Reporting/v12"	xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+                  <h:CustomerId i:nil="true" xmlns:h="https://bingads.microsoft.com/Reporting/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+                  <h:DeveloperToken	xmlns:h="https://bingads.microsoft.com/Reporting/v12">119C9YN00G530945</h:DeveloperToken>
+                  <h:Password i:nil="true"	xmlns:h="https://bingads.microsoft.com/Reporting/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+                  <h:UserName xmlns:h="https://bingads.microsoft.com/Reporting/v12">dovydas.m@gmail.com</h:UserName>
+				    </s:Header>
+            <s:Body>
+						<SubmitGenerateReportRequest xmlns="https://bingads.microsoft.com/Reporting/v12">
+							<ReportRequest i:type="AdGroupPerformanceReportRequest"	xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+								<ExcludeColumnHeaders>false</ExcludeColumnHeaders>
+								<ExcludeReportFooter>false</ExcludeReportFooter>
+								<ExcludeReportHeader>false</ExcludeReportHeader>
+								<Format>Csv</Format>
+								<Language>English</Language>
+								<ReportName>Ad performance report</ReportName>
+								<ReturnOnlyCompleteData>false</ReturnOnlyCompleteData>
+								<Aggregation>Summary</Aggregation>
+								<Columns>
+									<AdGroupPerformanceReportColumn>AdGroupId</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Revenue</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ReturnOnAdSpend</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Clicks</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Impressions</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>AverageCpc</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>AveragePosition</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Ctr</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Spend</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Conversions</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>CostPerConversion</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionSharePercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToBudgetPercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToRankPercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToBidPercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToAdRelevancePercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToExpectedCtrPercent</AdGroupPerformanceReportColumn>
+								</Columns>
+								<Filter i:nil="true"/>
+								<Scope>
+									<AccountIds i:nil="true" xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays"/>
+										<AdGroups i:nil="true"/>
+										<Campaigns>
+											<CampaignReportScope>
+												<AccountId>@(Model.AccountId)</AccountId>
+												<CampaignId>@(Model.CampaignId)</CampaignId>
+											</CampaignReportScope>
+										</Campaigns>
+									</Scope>
+									<Time>
+										<CustomDateRangeEnd i:nil="true"/>
+										<CustomDateRangeStart i:nil="true"/>
+										<PredefinedTime>Today</PredefinedTime>
+										<ReportTimeZone i:nil="true"/>
+									</Time>
+								</ReportRequest>
+							</SubmitGenerateReportRequest>
+						</s:Body>
+          </s:Envelope>
+          ]]>
+        </RequestBody>
+      </HttpSettings>
+      <Fetch.Url>
+        <![CDATA[
+          https://reporting.api.bingads.microsoft.com/Api/Advertiser/Reporting/v12/ReportingService.svc
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <Xpath Expr="//reportrequestid" Id="Url"/>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+
+  <RestConnector Id="Test">
+    <Parameters>
+      <Text Id="CampaignId" Debug.DefaultValue="349338690"/>
+      <Text Id="Email" Debug.DefaultValue="dovydas.m@gmail.com"/>
+      <Text Id="AccountId" Title="Account Id" Required="true" Debug.DefaultValue="150145763"/>
+    </Parameters>
+    <!--<Prepare>-->
+      <!--<Connector Id="SubmitGenerateReport"/>-->
+    <!--</Prepare>-->
+    <Fetch>
+      <Fetch.Url>
+        <![CDATA[
+          @{
+            string reportRequestId = "";
+            string reporturl = "";
+
+            //Initial CampaignPerformanceReportRequest
+            System.Net.HttpWebRequest req = (System.Net.HttpWebRequest)System.Net.WebRequest.Create("https://reporting.api.bingads.microsoft.com/Api/Advertiser/Reporting/v12/ReportingService.svc");
+            string generatedBody = getRequestReportBody();
+            string html = "";
+            req.Method = "POST";
+            req.ContentType = "text/xml; charset=utf-8";
+            req.Headers["SOAPAction"] = "SubmitGenerateReport";
+            var data = Encoding.ASCII.GetBytes(generatedBody);
+            req.ContentLength = data.Length;
+
+            using (var stream = req.GetRequestStream())
+            {
+                stream.Write(data, 0, data.Length);
+            }
+
+            using (System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)req.GetResponse())
+            using (System.IO.Stream stream = response.GetResponseStream())
+            using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
+            {
+                html = reader.ReadToEnd();
+                Regex regex = new Regex(@"<ReportRequestId>([^<]+)");
+                Match match = regex.Match(html);
+                reportRequestId = match.Groups[1].Value;
+                throw new Exception(reportRequestId);
+
+            }
+
+            bool finished = false;
+            while (finished == false){
+              System.Net.HttpWebRequest request = (System.Net.HttpWebRequest)System.Net.WebRequest.Create("https://reporting.api.bingads.microsoft.com/Api/Advertiser/Reporting/v12/ReportingService.svc");
+              html = "";
+              using (System.Net.HttpWebResponse response = (System.Net.HttpWebResponse)request.GetResponse())
+              using (System.IO.Stream stream = response.GetResponseStream())
+              using (System.IO.StreamReader reader = new System.IO.StreamReader(stream))
+              {
+                  html = reader.ReadToEnd();
+              }
+              finished = true;
+            }
+            }
+          https://www.google.com/
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <Xpath Expr="test" Id="test"></Xpath>
+    </Parse>
+  </RestConnector>
 
   <RazorFunctions>
     <![CDATA[
@@ -344,6 +506,75 @@
             }
         }
        return new Tuple<string,string>(customerId, accountId);
+    }
+
+    string getRequestReportBody (){
+    string template = @"
+    <s:Envelope xmlns:s=""http://schemas.xmlsoap.org/soap/envelope/"">
+            	<s:Header>
+                <h:ApplicationToken i:nil=""true"" xmlns:h=""https://bingads.microsoft.com/Reporting/v12"" xmlns:i=""http://www.w3.org/2001/XMLSchema-instance""/>
+                  <h:AuthenticationToken xmlns:h=""https://bingads.microsoft.com/Reporting/v12"">{0}</h:AuthenticationToken>
+                  <h:CustomerAccountId i:nil=""true""	xmlns:h=""https://bingads.microsoft.com/Reporting/v12""	xmlns:i=""http://www.w3.org/2001/XMLSchema-instance""/>
+                  <h:CustomerId i:nil=""true"" xmlns:h=""https://bingads.microsoft.com/Reporting/v12"" xmlns:i=""http://www.w3.org/2001/XMLSchema-instance""/>
+                  <h:DeveloperToken	xmlns:h=""https://bingads.microsoft.com/Reporting/v12"">119C9YN00G530945</h:DeveloperToken>
+                  <h:Password i:nil=""true""	xmlns:h=""https://bingads.microsoft.com/Reporting/v12"" xmlns:i=""http://www.w3.org/2001/XMLSchema-instance""/>
+                  <h:UserName xmlns:h=""https://bingads.microsoft.com/Reporting/v12"">{1}</h:UserName>
+				    </s:Header>
+            <s:Body>
+						<SubmitGenerateReportRequest xmlns=""https://bingads.microsoft.com/Reporting/v12"">
+							<ReportRequest i:type=""AdGroupPerformanceReportRequest""	xmlns:i=""http://www.w3.org/2001/XMLSchema-instance"">
+								<ExcludeColumnHeaders>false</ExcludeColumnHeaders>
+								<ExcludeReportFooter>false</ExcludeReportFooter>
+								<ExcludeReportHeader>false</ExcludeReportHeader>
+								<Format>Csv</Format>
+								<Language>English</Language>
+								<ReportName>Ad performance report</ReportName>
+								<ReturnOnlyCompleteData>false</ReturnOnlyCompleteData>
+								<Aggregation>Summary</Aggregation>
+								<Columns>
+									<AdGroupPerformanceReportColumn>AdGroupId</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Revenue</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ReturnOnAdSpend</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Clicks</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Impressions</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>AverageCpc</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>AveragePosition</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Ctr</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Spend</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>Conversions</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>CostPerConversion</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionSharePercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToBudgetPercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToRankPercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToBidPercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToAdRelevancePercent</AdGroupPerformanceReportColumn>
+									<AdGroupPerformanceReportColumn>ImpressionLostToExpectedCtrPercent</AdGroupPerformanceReportColumn>
+								</Columns>
+								<Filter i:nil=""true""/>
+								<Scope>
+									<AccountIds i:nil=""true"" xmlns:a=""http://schemas.microsoft.com/2003/10/Serialization/Arrays""/>
+										<AdGroups i:nil=""true""/>
+										<Campaigns>
+											<CampaignReportScope>
+												<AccountId>{2}</AccountId>
+												<CampaignId>{3}</CampaignId>
+											</CampaignReportScope>
+										</Campaigns>
+									</Scope>
+									<Time>
+										<CustomDateRangeEnd i:nil=""true""/>
+										<CustomDateRangeStart i:nil=""true""/>
+										<PredefinedTime>Today</PredefinedTime>
+										<ReportTimeZone i:nil=""true""/>
+									</Time>
+								</ReportRequest>
+							</SubmitGenerateReportRequest>
+						</s:Body>
+          </s:Envelope>
+    ";
+
+    string filled = String.Format(template, Model.Authenticator.Token, Model.Email, Model.AccountId, Model.CampaignId);
+    return filled;
     }
     ]]>
   </RazorFunctions>
