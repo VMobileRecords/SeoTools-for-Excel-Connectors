@@ -3,8 +3,7 @@
 
   <Author Name="Dovydas Meilunas" Url="https://github.com/dovydasm"/>
 
-  <DefaultOAuthAuthenticator StayAuthenticated="true" TokenName="access_token" AuthUrl="https://login.live.com/oauth20_authorize.srf?client_id=a688826e-d804-4c17-9317-e898b3508c99&amp;scope=bingads.manage&amp;response_type=token&amp;redirect_uri={0}&amp;state=hf7FD437we89"
-  />
+  <DefaultOAuthAuthenticator StayAuthenticated="true" TokenName="access_token" AuthUrl="https://login.live.com/oauth20_authorize.srf?client_id=a688826e-d804-4c17-9317-e898b3508c99&amp;scope=bingads.manage&amp;response_type=token&amp;redirect_uri={0}&amp;state=hf7FD437we89"/>
 
   <Resources>
     <Resource Id="Fail">
@@ -158,19 +157,19 @@
       </Fetch.Url>
     </Fetch>
     <Parse>
-        <Xpath Expr="//*[name()='accountinfowithcustomerdata']/*[name()='a:accountinfowithcustomerdata']" Id="asd">
-          <Xpath Expr="./*[name()='a:customerid']" Id="Id" Title="Id"/>
-          <Xpath Expr="./*[name()='a:customername']" Id="Name" Title="Name"/>
-          <Xpath Expr="./*[name()='a:accountname']" Id="AccountName" Title="Account Name"/>
-          <Xpath Expr="./*[name()='a:accountid']" Id="AccountId" Title="Account Id"/>
-          <Xpath Expr="./*[name()='a:accountnumber']" Id="AccountNumber" Title="Account Number" Converter="Int"/>
-          <Xpath Expr="./*[name()='a:accountlifecyclestatus']" Id="Status" Title="Status"/>
-        </Xpath>
+      <Xpath Expr="//*[name()='accountinfowithcustomerdata']/*[name()='a:accountinfowithcustomerdata']">
+        <Xpath Expr="./*[name()='a:customerid']" Id="Id" Title="Id"/>
+        <Xpath Expr="./*[name()='a:customername']" Id="Name" Title="Name"/>
+        <Xpath Expr="./*[name()='a:accountname']" Id="AccountName" Title="Account Name"/>
+        <Xpath Expr="./*[name()='a:accountid']" Id="AccountId" Title="Account Id"/>
+        <Xpath Expr="./*[name()='a:accountnumber']" Id="AccountNumber" Title="Account Number" Converter="Int"/>
+        <Xpath Expr="./*[name()='a:accountlifecyclestatus']" Id="Status" Title="Status"/>
+      </Xpath>
     </Parse>
     <Resource Id="Fail"/>
   </RestConnector>
 
-  <RestConnector Id="GetAccountsHidden" Hidden="True" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/searchaccounts?view=bingads-12">
+  <RestConnector Id="GetAccountsHidden" Hidden="true" HelpUrl="https://docs.microsoft.com/en-us/bingads/customer-management-service/searchaccounts?view=bingads-12">
     <Parameters>
       <Text Id="Email" Title="Email" Required="true"/>
     </Parameters>
@@ -209,6 +208,19 @@
     </Fetch>
     <Parse>
       <Xpath Expr="//*[name()='accountinfowithcustomerdata']/*[name()='a:accountinfowithcustomerdata']">
+        <Compute Id="AccountId">
+          <Compute.Expr>
+            <![CDATA[
+            @{
+              string name = "";
+              name += Model.CustomerId + "/" + Model.AccId;
+            }
+            @name
+            ]]>
+          </Compute.Expr>
+          <Xpath Expr="./*[name()='a:customerid']" Id="CustomerId"/>
+          <Xpath Expr="./*[name()='a:accountid']" Id="AccId"/>
+        </Compute>
         <Compute Id="Name">
           <Compute.Expr>
             <![CDATA[
@@ -222,7 +234,6 @@
           <Xpath Expr="./*[name()='a:customername']" Id="CustomerName"/>
           <Xpath Expr="./*[name()='a:accountname']" Id="AccountName"/>
         </Compute>
-        <Xpath Expr="./*[name()='a:accountid']" Id="AccountId" Title="Account Id"/>
       </Xpath>
     </Parse>
     <Resource Id="Fail"/>
@@ -230,8 +241,8 @@
 
   <RestConnector Id="GetCampaigns" Title="Campaigns" HelpUrl="https://docs.microsoft.com/en-us/bingads/campaign-management-service/getcampaignsbyaccountid?view=bingads-12">
     <Parameters>
-      <Text Id="Email" Title="Email" Required="true"/>
-      <Text Id="AccountId" Title="Account Id" Required="true" Select.Connector="GetAccountsHidden" Select.IdField="AccountId" Select.TitleField="Name"/>
+      <Text Id="Email" Title="Email" Debug.DefaultValue="dovydas.m@gmail.com" Required="true"/>
+      <Text Id="AccountId" Title="Account Id" Required="true" Debug.DefaultValue="250151008/150145763" Select.Connector="GetAccountsHidden" Select.IdField="AccountId" Select.TitleField="Name"/>
       <Select Id="Type" Title="Type" DefaultValue="Search" Required="true">
         <DataSource>
           <!--MultiSelect-->
@@ -244,7 +255,7 @@
     <Fetch>
       <HttpSettings>
         <RequestHeaders>
-          <Header Name="SOAPAction">FindAccountsOrCustomersInfo</Header>
+          <Header Name="SOAPAction">GetCampaignsByAccountId</Header>
         </RequestHeaders>
         <RequestMethod>POST</RequestMethod>
         <RequestContentType>text/xml; charset=utf-8</RequestContentType>
@@ -252,15 +263,17 @@
           <![CDATA[
            <s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
             <s:Header>
-              <h:ApplicationToken i:nil="true" xmlns:h="https://bingads.microsoft.com/Customer/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
-              <h:AuthenticationToken xmlns:h="https://bingads.microsoft.com/Customer/v12">@(Model.Authenticator.Token)</h:AuthenticationToken>
-              <h:DeveloperToken xmlns:h="https://bingads.microsoft.com/Customer/v12">119C9YN00G530945</h:DeveloperToken>
-              <h:Password i:nil="true" xmlns:h="https://bingads.microsoft.com/Customer/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
-              <h:UserName xmlns:h="https://bingads.microsoft.com/Customer/v12">@(Model.Email)</h:UserName>
+              <h:ApplicationToken i:nil="true" xmlns:h="https://bingads.microsoft.com/CampaignManagement/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+              <h:AuthenticationToken xmlns:h="https://bingads.microsoft.com/CampaignManagement/v12">@(Model.Authenticator.Token)</h:AuthenticationToken>
+              <h:DeveloperToken xmlns:h="https://bingads.microsoft.com/CampaignManagement/v12">119C9YN00G530945</h:DeveloperToken>
+              <h:Password i:nil="true" xmlns:h="https://bingads.microsoft.com/CampaignManagement/v12" xmlns:i="http://www.w3.org/2001/XMLSchema-instance"/>
+              <h:UserName xmlns:h="https://bingads.microsoft.com/CampaignManagement/v12">@(Model.Email)</h:UserName>
+              <h:CustomerId	xmlns:h="https://bingads.microsoft.com/CampaignManagement/v12">@(GetIds(Model.AccountId).Item1)</h:CustomerId>
+              <h:CustomerAccountId xmlns:h="https://bingads.microsoft.com/CampaignManagement/v12">@(GetIds(Model.AccountId).Item2)</h:CustomerAccountId>
             </s:Header>
             <s:Body>
               <GetCampaignsByAccountIdRequest	xmlns="https://bingads.microsoft.com/CampaignManagement/v12">
-					      <AccountId>@(Model.AccountId)</AccountId>
+					      <AccountId>@(GetIds(Model.AccountId).Item2)</AccountId>
       					<CampaignType>Search</CampaignType>
 			        </GetCampaignsByAccountIdRequest>
             </s:Body>
@@ -270,18 +283,28 @@
       </HttpSettings>
       <Fetch.Url>
         <![CDATA[
-          https://clientcenter.api.bingads.microsoft.com/Api/CustomerManagement/v12/CustomerManagementService.svc
+          https://campaign.api.bingads.microsoft.com/Api/Advertiser/CampaignManagement/v12/CampaignManagementService.svc
         ]]>
       </Fetch.Url>
     </Fetch>
     <Parse>
-      <Xpath Expr="//*[name()='accountinfowithcustomerdata']/*[name()='a:accountinfowithcustomerdata']" Id="asd">
-        <Xpath Expr="./*[name()='a:customerid']" Id="Id" Title="Id"/>
-        <Xpath Expr="./*[name()='a:customername']" Id="Name" Title="Name"/>
-        <Xpath Expr="./*[name()='a:accountname']" Id="AccountName" Title="Account Name"/>
-        <Xpath Expr="./*[name()='a:accountid']" Id="AccountId" Title="Account Id"/>
-        <Xpath Expr="./*[name()='a:accountnumber']" Id="AccountNumber" Title="Account Number" Converter="Int"/>
-        <Xpath Expr="./*[name()='a:accountlifecyclestatus']" Id="Status" Title="Status"/>
+      <Xpath Expr="//campaigns/*">
+        <XPath Expr="./id" Id="Id" Title="Id" Converter="String" HelpText=""/>
+        <XPath Expr="./name" Id="Name" Title="Name" Converter="String" HelpText=""/>
+        <XPath Expr="./status" Id="Status" Title="Status" Converter="String" HelpText=""/>
+        <XPath Expr="./dailybudget" Id="Dailybudget" Title="Daily Budget" Converter="String" HelpText=""/>
+        <XPath Expr="./description" Id="Description" Title="Description" Converter="String" HelpText=""/>
+        <XPath Expr="./campaigntype" Id="Campaigntype" Title="Campaigntype" Converter="String" HelpText=""/>
+        <XPath Expr="./biddingscheme" Id="Biddingscheme" Title="Bidding Scheme" Converter="String" HelpText=""/>
+        <XPath Expr="./budgettype" Id="Budgettype" Title="Budget Type" Converter="String" HelpText=""/>
+        <XPath Expr="./forwardcompatibilitymap" Id="Forwardcompatibilitymap" Title="Forward Compatibility Map" Converter="String" HelpText="" Checked="false"/>
+        <XPath Expr="./subtype" Id="Subtype" Title="Subtype" Converter="String" HelpText=""/>
+        <XPath Expr="./timezone" Id="Timezone" Title="Timezone" Converter="String" HelpText=""/>
+        <XPath Expr="./trackingurltemplate" Id="Trackingurltemplate" Title="Tracking URL Template" Converter="String" HelpText="" Checked="false"/>
+        <XPath Expr="./urlcustomparameters" Id="Urlcustomparameters" Title="URL Custompa Pameters" Converter="String" HelpText="" Checked="false"/>
+        <XPath Expr="./settings" Id="Settings" Title="Settings" Converter="String" HelpText=""  hecked="false"/>
+        <XPath Expr="./budgetid" Id="Budgetid" Title="Budgetid" Converter="String" HelpText="" Checked="false"/>
+        <XPath Expr="./languages" Id="Languages" Title="Languages" Converter="String" HelpText=""/>
       </Xpath>
     </Parse>
     <Resource Id="Fail"/>
@@ -304,6 +327,23 @@
       System.Xml.XmlNode node = doc.CreateElement("root");
       node.InnerXml = escaped;
       return node.InnerText;
+    }
+
+    Tuple<string,string> GetIds(string combined){
+      string customerId = "";
+      string accountId = "";
+      if (!String.IsNullOrWhiteSpace(combined))
+        {
+            int charLocation = combined.IndexOf('/');
+            if (charLocation > 0)
+            {
+                customerId = combined.Substring(0, charLocation);
+                if (charLocation < combined.Length - 1){
+                  accountId = combined.Substring(charLocation + 1);
+                }
+            }
+        }
+       return new Tuple<string,string>(customerId, accountId);
     }
     ]]>
   </RazorFunctions>
