@@ -1,9 +1,156 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<Suite Category="" Title="Namecheap" Id="Namecheap" RequireVersion="7.0" SourceUrl="https://github.com/nielsbosma/SeoTools-for-Excel-Connectors/blob/master/Namecheap.xml" HelpUrl="http://seotoolsforexcel.com/namecheap/">
+<Suite Category="Webmaster" Title="Namecheap" Id="Namecheap" RequireVersion="7.0" SourceUrl="https://github.com/nielsbosma/SeoTools-for-Excel-Connectors/blob/master/Namecheap.xml" HelpUrl="http://seotoolsforexcel.com/namecheap/">
 
   <Author Name="Dovydas Meilunas" Url="https://github.com/dovydasm"/>
 
   <Settings HelpText="What's this?" HelpUrl="http://seotoolsforexcel.com/namecheap/">
+    <Text Id="ApiUser" Title="Username" Required="true" HelpUrl="http://seotoolsforexcel.com/namecheap/"/>
     <Text Id="ApiKey" Title="API Key" Required="true" HelpUrl="http://seotoolsforexcel.com/namecheap/"/>
+    <Text Id="ClientIp" Title="Client IP" Required="true" HelpText="Your IP address. Should be one of the whitelisted IPs" HelpUrl="http://seotoolsforexcel.com/namecheap/"/>
+    <Text Id="BaseUrl" DefaultValue="https://api.sandbox.namecheap.com/xml.response/" Hidden="true"/>
   </Settings>
+
+  <Resources>
+    <Resource Id="Fail">
+      <Fail>
+        <XPath Expr="//*[name()='error']"/>
+      </Fail>
+    </Resource>
+  </Resources>
+
+  <RestConnector Id="Domains" Title="Domains" HelpText="Returns a list of domains for the particular user" HelpUrl="https://www.namecheap.com/support/api/methods/domains/get-list.aspx">
+    <Parameters>
+      <Text Id="Username" Required="true"/>
+      <Select Id="ListType" Title="List type" DefaultValue="ALL">
+        <DataSource>
+          <Item Id="ALL" Name="All"/>
+          <Item Id="EXPIRING" Name="Expiring"/>
+          <Item Id="EXPIRED" Name="Expired"/>
+        </DataSource>
+      </Select>
+      <Text Id="SearchTerm" Title="Search"/>
+      <Select Id="SortBy">
+        <DataSource>
+          <Item Id="default" Title="Default"/>
+          <Item Id="NAME" Title="Name"/>
+          <Item Id="NAME_DESC" Title="Name descending"/>
+          <Item Id="EXPIREDATE" Title="Expire date"/>
+          <Item Id="EXPIREDATE_DESC" Title="Expire date descending"/>
+          <Item Id="CREATEDATE" Title="Create date"/>
+          <Item Id="CREATEDATE_DESC" Title="Createdate descending"/>
+        </DataSource>
+      </Select>
+    </Parameters>
+    <Paging PageSize="100">
+      <Parse>
+        <XPath Id="AvaliableRows" Expr="//*[name()='paging']/*[name()='totalitems']"/>
+      </Parse>
+    </Paging>
+    <Fetch>
+      <Fetch.Url>
+        <![CDATA[
+          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
+          &UserName=@(Model.Username)
+          &Command=namecheap.domains.getList
+          &PageSize=@(Model.PageCursor.NextTake)
+          &Page=@(Model.PageCursor.Page+1)
+          &ListType=@(Model.ListType)
+          @if(!string.IsNullOrEmpty(Model.SearchTerm))
+          {
+            @: &SearchTerm=@(Model.SearchTerm)
+          }
+          @if(Model.SortBy != "default"){
+           @: &SortBy=@(Model.SortBy)
+          }
+          &ClientIp=@(Model.ClientIp)
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <XPath Expr="//*[name()='domaingetlistresult']/*[name()='domain']">
+        <Xpath Expr="." Attribute="Id" Id="Id"/>
+        <Xpath Expr="." Attribute="Name" Id="Name"/>
+        <Xpath Expr="." Attribute="User" Id="User" Checked="false"/>
+        <Xpath Expr="." Attribute="Created" Id="Created" Converter="String"/>
+        <Xpath Expr="." Attribute="Expires" Id="Expires" Converter="String"/>
+        <Xpath Expr="." Attribute="IsExpired" Id="Expired" Converter="Bool"/>
+        <Xpath Expr="." Attribute="IsLocked" Id="Locked" Converter="Bool"/>
+        <Xpath Expr="." Attribute="AutoRenew" Id="AutoRenew" Title="Auto Renew" Converter="Bool"/>
+        <Xpath Expr="." Attribute="WhoisGuard" Id="WhoisGuard" Title="WhoisGuard"/>
+        <Xpath Expr="." Attribute="IsPremium" Id="IsPremium" Title="Premium" Converter="Bool"/>
+        <Xpath Expr="." Attribute="IsOurDns" Id="OurDns" Title="NameCheap DNS" Converter="Bool"/>
+      </XPath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+  <RestConnector Id="Contacts" Title="Domain Contacts" HelpText="Gets contact information for the requested domain" HelpUrl="https://www.namecheap.com/support/api/methods/domains/get-contacts.aspx">
+    <Parameters>
+      <Text Id="Username" Required="true"/>
+      <Text Id="Domain" Required="true"/>
+    </Parameters>
+    <Fetch>
+      <Fetch.Url>
+        <![CDATA[
+          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
+          &UserName=@(Model.Username)
+          &Command=namecheap.domains.getContacts
+          &DomainName=@(Model.Domain)
+          &ClientIp=@(Model.ClientIp)
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <XPath Expr="//*[name()='domaincontactsresult']/*">
+        <XPath Expr="./*[name()='organizationname']" Id="OrganizationName" Title="Organization Name" />
+        <XPath Expr="./*[name()='jobtitle']" Id="JobTitle" Title="Job Title" />
+        <XPath Expr="./*[name()='firstname']" Id="FirstName" Title="First Name" />
+        <XPath Expr="./*[name()='lastname']" Id="LastName" Title="Last Name" />
+        <XPath Expr="./*[name()='address1']" Id="Address1" Title="Address 1" />
+        <XPath Expr="./*[name()='address2']" Id="Address2" Title="Address 2" />
+        <XPath Expr="./*[name()='city']" Id="City" Title="City" />
+        <XPath Expr="./*[name()='stateprovince']" Id="StateProvince" Title="State Province" />
+        <XPath Expr="./*[name()='postalcode']" Id="PostalCode" Title="Postal Code" />
+        <XPath Expr="./*[name()='country']" Id="Country" Title="Country" />
+        <XPath Expr="./*[name()='phone']" Id="Phone" Title="Phone" />
+        <XPath Expr="./*[name()='emailaddress']" Id="EmailAddress" Title="Email Address" />
+      </XPath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+  <RestConnector Id="TldList" Title="Top level domain list" HelpText="Returns a list of TLDs" HelpUrl="https://www.namecheap.com/support/api/methods/domains/get-tld-list.aspx">
+    <Parameters>
+      <Text Id="Username" Required="true"/>
+    </Parameters>
+    <Fetch>
+      <Fetch.Url>
+        <![CDATA[
+          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
+          &Command=namecheap.domains.gettldlist
+          &UserName=@(Model.Username)
+          &DomainName=@(Model.Domain)
+          &ClientIp=@(Model.ClientIp)
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <XPath Expr="//*[name()='domaincontactsresult']/*">
+        <XPath Expr="./*[name()='organizationname']" Id="OrganizationName" Title="Organization Name" />
+        <XPath Expr="./*[name()='jobtitle']" Id="JobTitle" Title="Job Title" />
+        <XPath Expr="./*[name()='firstname']" Id="FirstName" Title="First Name" />
+        <XPath Expr="./*[name()='lastname']" Id="LastName" Title="Last Name" />
+        <XPath Expr="./*[name()='address1']" Id="Address1" Title="Address 1" />
+        <XPath Expr="./*[name()='address2']" Id="Address2" Title="Address 2" />
+        <XPath Expr="./*[name()='city']" Id="City" Title="City" />
+        <XPath Expr="./*[name()='stateprovince']" Id="StateProvince" Title="State Province" />
+        <XPath Expr="./*[name()='postalcode']" Id="PostalCode" Title="Postal Code" />
+        <XPath Expr="./*[name()='country']" Id="Country" Title="Country" />
+        <XPath Expr="./*[name()='phone']" Id="Phone" Title="Phone" />
+        <XPath Expr="./*[name()='emailaddress']" Id="EmailAddress" Title="Email Address" />
+      </XPath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
 </Suite>
