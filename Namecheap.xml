@@ -6,7 +6,6 @@
     <Text Id="ApiUser" Title="Username" Required="true" HelpUrl="http://seotoolsforexcel.com/namecheap/"/>
     <Text Id="ApiKey" Title="API Key" Required="true" HelpUrl="http://seotoolsforexcel.com/namecheap/"/>
     <Text Id="ClientIp" Title="Client IP" Required="true" HelpText="Your IP address. Should be one of the whitelisted IPs" HelpUrl="http://seotoolsforexcel.com/namecheap/"/>
-    <Text Id="BaseUrl" DefaultValue="https://api.sandbox.namecheap.com/xml.response/" Hidden="true"/>
   </Settings>
 
   <Resources>
@@ -48,8 +47,7 @@
     <Fetch>
       <Fetch.Url>
         <![CDATA[
-          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
-          &UserName=@(Model.Username)
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
           &Command=namecheap.domains.getList
           &PageSize=@(Model.PageCursor.NextTake)
           &Page=@(Model.PageCursor.Page+1)
@@ -85,14 +83,12 @@
 
   <RestConnector Id="Contacts" Title="Domain Contacts" HelpText="Gets contact information for the requested domain" HelpUrl="https://www.namecheap.com/support/api/methods/domains/get-contacts.aspx">
     <Parameters>
-      <Text Id="Username" Required="true"/>
       <Text Id="Domain" Required="true"/>
     </Parameters>
     <Fetch>
       <Fetch.Url>
         <![CDATA[
-          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
-          &UserName=@(Model.Username)
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
           &Command=namecheap.domains.getContacts
           &DomainName=@(Model.Domain)
           &ClientIp=@(Model.ClientIp)
@@ -106,10 +102,10 @@
         <XPath Expr="./*[name()='firstname']" Id="FirstName" Title="First Name"/>
         <XPath Expr="./*[name()='lastname']" Id="LastName" Title="Last Name"/>
         <XPath Expr="./*[name()='address1']" Id="Address1" Title="Address 1"/>
-        <XPath Expr="./*[name()='address2']" Id="Address2" Title="Address 2"/>
+        <XPath Expr="./*[name()='address2']" Id="Address2" Title="Address 2" DefaultValue=""/>
         <XPath Expr="./*[name()='city']" Id="City" Title="City"/>
         <XPath Expr="./*[name()='stateprovince']" Id="StateProvince" Title="State Province"/>
-        <XPath Expr="./*[name()='postalcode']" Id="PostalCode" Title="Postal Code"/>
+        <XPath Expr="./*[name()='postalcode']" Id="PostalCode" Title="Postal Code" Converter="Long"/>
         <XPath Expr="./*[name()='country']" Id="Country" Title="Country"/>
         <XPath Expr="./*[name()='phone']" Id="Phone" Title="Phone"/>
         <XPath Expr="./*[name()='emailaddress']" Id="EmailAddress" Title="Email Address"/>
@@ -118,16 +114,12 @@
     <Resource Id="Fail"/>
   </RestConnector>
 
-  <RestConnector Id="TldList" Title="TLD list" HelpText="Returns a list of TLDs" HelpUrl="https://www.namecheap.com/support/api/methods/domains/get-tld-list.aspx">
-    <Parameters>
-      <Text Id="Username" Required="true"/>
-    </Parameters>
+  <RestConnector Id="TldList" Title="TLD List" HelpText="Returns a list of TLDs" HelpUrl="https://www.namecheap.com/support/api/methods/domains/get-tld-list.aspx">
     <Fetch>
       <Fetch.Url>
         <![CDATA[
-          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
           &Command=namecheap.domains.gettldlist
-          &UserName=@(Model.Username)
           &ClientIp=@(Model.ClientIp)
         ]]>
       </Fetch.Url>
@@ -135,7 +127,7 @@
     <Parse>
       <XPath Expr="//*[name()='tlds']/*">
         <XPath Expr="." Attribute="Name" Id="Name" Title="Name" HelpText="Indicates the top-level domain"/>
-        <XPath Expr="." Attribute="NonRealTimeDomain" Id="NonRealTimeDomain" Title="Non Real Time" HelpText="Possible statuses: True, False. Indicates whether the domain registration is instant (real-time) or not."/>
+        <XPath Expr="." Attribute="NonRealTimeDomain" Id="NonRealTimeDomain" Title="Non Real Time" Converter="Bool" HelpText="Possible statuses: True, False. Indicates whether the domain registration is instant (real-time) or not."/>
         <XPath Expr="." Attribute="MinRegisterYears" Id="MinRegisterYears" Title="Min Registration Years" Converter="Int" HelpText="Minimum number of years the TLD can be registered for"/>
         <XPath Expr="." Attribute="MaxRegisterYears" Id="MaxRegisterYears" Title="Max Registration Years" Converter="Int" HelpText="Maximum number of years the TLD can be registered for"/>
         <XPath Expr="." Attribute="MinRenewYears" Id="MinRenewYears" Title="Min Renew Years" Converter="Int" HelpText="Minimum number of years the TLD can be renewed for"/>
@@ -158,17 +150,15 @@
     <Resource Id="Fail"/>
   </RestConnector>
 
-  <RestConnector Id="CheckAvailability" Title="Check availability" HelpText="Checks the availability of domain" HelpUrl="https://www.namecheap.com/support/api/methods/domains/check.aspx">
+  <RestConnector Id="CheckAvailability" Title="Check Availability" HelpText="Checks the availability of domain" HelpUrl="https://www.namecheap.com/support/api/methods/domains/check.aspx">
     <Parameters>
-      <Text Id="Username" Debug.DefaultValue="pwneror" Required="true"/>
-      <Text Id="Urls" Title="URL(s)" Debug.DefaultValue="seotoolsforexcel.com" Required="true" HelpText="Enter 1 to 50 URLs, one per line" Multiline="true"/>
+      <Text Id="Urls" Title="URL(s)" Required="true" HelpText="Enter 1 to 50 URLs, one per line" Multiline="true"/>
     </Parameters>
     <Fetch>
       <Fetch.Url>
         <![CDATA[
-          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
           &Command=namecheap.domains.check
-          &UserName=@(Model.Username)
           &ClientIp=@(Model.ClientIp)
           &DomainList=@(FetchUrls())
         ]]>
@@ -194,15 +184,13 @@
 
   <RestConnector Id="GetInfo" Title="Domain Info" HelpText="Returns information about the requested domain" HelpUrl="https://www.namecheap.com/support/api/methods/domains/get-info.aspx">
     <Parameters>
-      <Text Id="Username" Debug.DefaultValue="pwneror" Required="true"/>
-      <Text Id="Domain" Title="Domain" Debug.DefaultValue="seotoolsforexcel.com" Required="true"/>
+      <Text Id="Domain" Title="Domain" Required="true"/>
     </Parameters>
     <Fetch>
       <Fetch.Url>
         <![CDATA[
-          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
           &Command=namecheap.domains.getInfo
-          &UserName=@(Model.Username)
           &ClientIp=@(Model.ClientIp)
           &DomainName=@(Model.Domain)
         ]]>
@@ -226,18 +214,16 @@
     <Resource Id="Fail"/>
   </RestConnector>
 
-  <RestConnector Id="DnsList" Title="Domain DNS servers" HelpText="Gets a list of DNS servers associated with the requested domain." HelpUrl="https://www.namecheap.com/support/api/methods/domains-dns/get-list.aspx">
+  <RestConnector Id="DnsList" Title="Domain DNS Servers" HelpText="Gets a list of DNS servers associated with the requested domain." HelpUrl="https://www.namecheap.com/support/api/methods/domains-dns/get-list.aspx">
     <Parameters>
-      <Text Id="Username" Debug.DefaultValue="pwneror" Required="true"/>
-      <Text Id="Sld" Title="Second level domain" Debug.DefaultValue="aaaaaaaaaaaadddddb" Required="true" HelpText="Second level domain. For example, for google.com this would be google"/>
-      <Text Id="Tld" Title="Top level domain" Debug.DefaultValue="com" Required="true" HelpText="Top level domain. For example, for google.com this would be com" />
+      <Text Id="Sld" Title="Second level domain" Required="true" HelpText="Second level domain. For example, for google.com this would be google"/>
+      <Text Id="Tld" Title="Top level domain"  Required="true" HelpText="Top level domain. For example, for google.com this would be com" />
     </Parameters>
     <Fetch>
       <Fetch.Url>
         <![CDATA[
-          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
           &Command=namecheap.domains.dns.getList
-          &UserName=@(Model.Username)
           &ClientIp=@(Model.ClientIp)
           &SLD=@(Model.Sld)
           &TLD=@(Model.Tld)
@@ -253,18 +239,16 @@
     <Resource Id="Fail"/>
   </RestConnector>
 
-  <RestConnector Id="HostList" Title="Domain host records" HelpText="Retrieves DNS host record settings for the requested domain." HelpUrl="https://www.namecheap.com/support/api/methods/domains-dns/get-hosts.aspx">
+  <RestConnector Id="HostList" Title="Domain Host Records" HelpText="Retrieves DNS host record settings for the requested domain." HelpUrl="https://www.namecheap.com/support/api/methods/domains-dns/get-hosts.aspx">
     <Parameters>
-      <Text Id="Username" Debug.DefaultValue="pwneror" Required="true"/>
-      <Text Id="Sld" Title="Second level domain" Debug.DefaultValue="aaaaaaaaaaaadddddb" Required="true" HelpText="Second level domain. For example, for google.com this would be google"/>
-      <Text Id="Tld" Title="Top level domain" Debug.DefaultValue="com" Required="true" HelpText="Top level domain. For example, for google.com this would be com" />
+      <Text Id="Sld" Title="Second level domain" Required="true" HelpText="Second level domain. For example, for google.com this would be google"/>
+      <Text Id="Tld" Title="Top level domain" Required="true" HelpText="Top level domain. For example, for google.com this would be com" />
     </Parameters>
     <Fetch>
       <Fetch.Url>
         <![CDATA[
-          @(Model.BaseUrl)?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
           &Command=namecheap.domains.dns.getHosts
-          &UserName=@(Model.Username)
           &ClientIp=@(Model.ClientIp)
           &SLD=@(Model.Sld)
           &TLD=@(Model.Tld)
@@ -281,6 +265,74 @@
         <XPath Expr="." Attribute="MXPref" Id="MXPref" Converter="Int" />
         <XPath Expr="." Attribute="TTL" Id="TTL" Converter="Double" />
       </XPath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+  <RestConnector Id="DomainRegistrarLockStatus" Title="Domain Registrar Lock Status" HelpText="Gets the Registrar Lock status for the requested domain." HelpUrl="https://www.namecheap.com/support/api/methods/domains/get-registrar-lock.aspx">
+    <Parameters>
+      <Text Id="Domain" Title="Domain" Required="true"/>
+    </Parameters>
+    <Fetch>
+      <Fetch.Url>
+        <![CDATA[
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
+          &Command=namecheap.domains.getRegistrarLock
+          &ClientIp=@(Model.ClientIp)
+          &DomainName=@(Model.Domain)
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <XPath Expr="//domaingetregistrarlockresult">
+				<XPath Expr="." Attribute="RegistrarLockStatus" Id="RegistrarLockStatus" Title="Status" Converter="Bool"/>
+			</XPath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+  <RestConnector Id="DomainDNSEmailForwarding" Title="Domain DNS Email Forwarding" HelpText="Gets email forwarding settings for the requested domain." HelpUrl="https://www.namecheap.com/support/api/methods/domains-dns/get-email-forwarding.aspx">
+    <Parameters>
+      <Text Id="Domain" Title="Domain" Required="true"/>
+    </Parameters>
+    <Fetch>
+      <Fetch.Url>
+        <![CDATA[
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
+          &Command=namecheap.domains.dns.getEmailForwarding
+          &ClientIp=@(Model.ClientIp)
+          &DomainName=@(Model.Domain)
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <XPath Expr="//forward">
+				<XPath Expr="." Id="Email" Title="Email" Converter="String"/>
+				<XPath Expr="." Attribute="mailboxid" Id="MailboxId" Title="Mailbox Id" Converter="String" HelpText="The Id of email forwarding mailbox that was created."/>
+				<XPath Expr="." Attribute="mailbox" Id="Mailbox" Title="Mailbox" Converter="String" HelpText="The email forwarding mailbox that was created."/>
+
+			</XPath>
+    </Parse>
+    <Resource Id="Fail"/>
+  </RestConnector>
+
+  <RestConnector Id="AccountBalance" Title="Account Balance" HelpText="Gets information about fund in the user's account." HelpUrl="https://www.namecheap.com/support/api/methods/users/get-balances.aspx">
+    <Fetch>
+      <Fetch.Url>
+        <![CDATA[
+          https://api.namecheap.com/xml.response/?ApiUser=@(Model.ApiUser)&ApiKey=@(Model.ApiKey)&UserName=@(Model.ApiUser)
+          &Command=namecheap.users.getBalances
+          &ClientIp=@(Model.ClientIp)
+        ]]>
+      </Fetch.Url>
+    </Fetch>
+    <Parse>
+      <XPath Expr="//usergetbalancesresult">
+				<XPath Expr="." Attribute="AvailableBalance" Id="AvailableBalance" Title="Available Balance" Converter="String" HelpText="Total amount in the customer’s account"/>
+				<XPath Expr="." Attribute="Currency" Id="Currency" Converter="String" HelpText="Currency in which the price is listed"/>
+				<XPath Expr="." Attribute="EarnedAmount" Id="EarnedAmount" Title="Eerned Amount" Converter="String" HelpText="Amount earned from Marketplace sales"/>
+				<XPath Expr="." Attribute="WithdrawableAmount" Id="WithdrawableAmount" Title="Withdrawable Amount" Converter="String" HelpText="Amount available for withdraw"/>
+			</XPath>
     </Parse>
     <Resource Id="Fail"/>
   </RestConnector>
